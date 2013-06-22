@@ -90,7 +90,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
 
 
     private void setContactNameText(int iContactNum) {
-        TextView t1, t2, tPhone1, tPhone2;
+        TextView t1, t2, tPhone1, tPhone2, tStatus1, tStatus2;
         ImageView img1, img2;
 
         t1 = (TextView) findViewById(R.id.contact1);
@@ -99,14 +99,16 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
         img2 = (ImageView) findViewById(R.id.img2);
         tPhone1 = (TextView) findViewById(R.id.contact1phone);
         tPhone2 = (TextView) findViewById(R.id.contact2phone);
+        tStatus1 = (TextView) findViewById(R.id.status1);
+        tStatus2 = (TextView) findViewById(R.id.status2);
 
         Uri photoUri = Uri.parse(mContactList.get(iContactNum).getPhoto());
         img1.setImageURI(photoUri);
         img2.setImageURI(photoUri);
 
         if(mContactList.get(iContactNum).getName() != null){
-            t1.setText(mContactList.get(iContactNum).getName());
-            t2.setText(mContactList.get(iContactNum).getName());
+            t1.setText(mContactList.get(iContactNum).getName() + " - " + mContactList.get(iContactNum).getNumTypeString());
+            t2.setText(mContactList.get(iContactNum).getName() + " - " + mContactList.get(iContactNum).getNumTypeString());
         }else {
             t1.setText("Unknown");
             t2.setText("Unknown");
@@ -114,6 +116,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
         }
         tPhone1.setText(mContactList.get(iContactNum).getPhoneNumber());
         tPhone2.setText(mContactList.get(iContactNum).getPhoneNumber());
+        tStatus1.setText(mContactList.get(iContactNum).getStatus());
+        tStatus2.setText(mContactList.get(iContactNum).getStatus());
 
     }
 
@@ -126,7 +130,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
                 android.provider.CallLog.Calls.CACHED_NAME,
                 android.provider.CallLog.Calls.NUMBER,
                 android.provider.CallLog.Calls._ID,
-                CallLog.Calls.DATE };
+                CallLog.Calls.DATE,
+                CallLog.Calls.CACHED_NUMBER_TYPE};
 
         String orderByDesc = CallLog.Calls.DATE + " DESC";
         Cursor people = cr.query(uri, projection, null, null, orderByDesc);
@@ -137,13 +142,15 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
         int indexName = people.getColumnIndex(android.provider.CallLog.Calls.CACHED_NAME);
         int indexNumber = people.getColumnIndex(android.provider.CallLog.Calls.NUMBER);
         int indexID = people.getColumnIndex(android.provider.CallLog.Calls._ID );
+        int indexType = people.getColumnIndex(CallLog.Calls.CACHED_NUMBER_TYPE );
 
         if (people.moveToFirst()) {
             Set<String> seen = new HashSet<String>();
             do {
                 String name = people.getString(indexName);
                 String phoneNum = people.getString(indexNumber);
-                long id = people.getLong(indexNumber);
+                long id = people.getLong(indexID);
+                int type = people.getInt(indexType);
 
                 if (seen.add(phoneNum)) {
                     Contact contact = new Contact();
@@ -151,6 +158,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
                     contact.setPhoneNumber(phoneNum);
                     contact.setID(id);
                     contact.setPhoto(getPhoto(cr, phoneNum));
+                    contact.setStatus("Recent Call");
+                    contact.setNumTypeInt(type);
                     mContactList.add(contact);
                 }
 
@@ -167,7 +176,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
                 ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
                 ContactsContract.CommonDataKinds.Phone.NUMBER,
                 ContactsContract.CommonDataKinds.Phone._ID,
-                ContactsContract.CommonDataKinds.Phone.STARRED };
+                ContactsContract.CommonDataKinds.Phone.STARRED,
+                ContactsContract.CommonDataKinds.Phone.TYPE};
 
 
         String orderByAsc = ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED + " ASC";
@@ -180,6 +190,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
         int indexNumber = starredPeople.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
         int indexID = starredPeople.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID);
         int indexStarred =starredPeople.getColumnIndex(ContactsContract.CommonDataKinds.Phone.STARRED);
+        int indexType = starredPeople.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE);
 
 
         if (starredPeople.moveToFirst()) {
@@ -189,6 +200,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
                 String phoneNum = starredPeople.getString(indexNumber);
                 int starred = starredPeople.getInt(indexStarred);
                 long id = starredPeople.getLong(indexNumber);
+                int type = starredPeople.getInt(indexType);
 
                 if (starred == 1) {
                     Contact contact = new Contact();
@@ -196,6 +208,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
                     contact.setPhoneNumber(phoneNum);
                     contact.setID(id);
                     contact.setPhoto(getPhoto(cr, phoneNum));
+                    contact.setStatus("Starred");
+                    contact.setNumTypeInt(type);
                     mContactList.add(contact);
                     numStarred++;
                 }
@@ -297,7 +311,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, Text
     private void speakContactName(String contactName) {
 
         if(contactName != null) {
-            tts.speak(contactName, TextToSpeech.QUEUE_FLUSH, null);
+            tts.speak(contactName + ", " + mContactList.get(contactNum).getNumTypeString(), TextToSpeech.QUEUE_FLUSH, null);
         } else {
             tts.speak("Unknown Caller"+ ", " + mContactList.get(contactNum).getPhoneNumberDigits(), TextToSpeech.QUEUE_FLUSH, null);
 

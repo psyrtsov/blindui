@@ -46,6 +46,15 @@
                       android:textSize="35dp"
                       android:gravity="center" >
             </TextView>
+            <TextView android:id="@+id/status1"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textColor="#ffffffff"
+                      android:textStyle="bold"
+                      android:textSize="25dp"
+                      android:gravity="center">
+            </TextView>
+
         </LinearLayout>
 
         <LinearLayout
@@ -62,6 +71,7 @@
                       android:textSize="40dp"
                       android:gravity="center">
             </TextView>
+
             <ImageView
                     android:id="@+id/img2"
                     android:layout_width="wrap_content"
@@ -81,6 +91,14 @@
                       android:textStyle="bold"
                       android:textSize="35dp"
                       android:gravity="center" >
+            </TextView>
+            <TextView android:id="@+id/status2"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:textColor="#ffffffff"
+                      android:textStyle="bold"
+                      android:textSize="25dp"
+                      android:gravity="center">
             </TextView>
         </LinearLayout>
     </ViewFlipper>
